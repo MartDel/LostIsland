@@ -3,7 +3,9 @@ import {
     OrbitControls
 } from 'https://cdn.skypack.dev/three/examples/jsm/controls/OrbitControls.js';
 import {
-    Utils
+    Utils,
+    Config,
+    Type
 } from './Utils.js';
 
 /*
@@ -15,18 +17,11 @@ document.body.appendChild(stats.dom);
 
 let scene, renderer, camera, clock, controls, map;
 
-const Type = {
-    Air: null,
-    Grass: 'grass.jpg',
-    Dirt: 'dirt.jpeg'
-};
-
-// Import textures
-const TEXTURE_PATH = '../textures/';
+// Import textures;
 const loadManager = new THREE.LoadingManager();
 const loader = new THREE.TextureLoader(loadManager);
-const grassTexture = loader.load(TEXTURE_PATH + Type.Grass);
-const dirtTexture = loader.load(TEXTURE_PATH + Type.Dirt);
+const grassTexture = loader.load(Config.textures.path + Type.Grass);
+const dirtTexture = loader.load(Config.textures.path + Type.Dirt);
 loadManager.onLoad = init;
 
 /**
@@ -88,7 +83,9 @@ class Map {
         this.blocks = [];
         this.minRadius = minRadius;
         this.maxRadius = maxRadius;
-        this.generation = new Utils.RandomGenerator(this.maxRadius - this.minRadius);
+        this.generation = new Utils.RandomGenerator(this.minRadius, this.maxRadius);
+        // this.generation.setSeed('135141235169937');
+        // console.log('135141235169937');
     }
 
     /**
@@ -105,34 +102,36 @@ class Map {
      */
     generate(minRadius) {
         let cube, cubeMaterial, currentLocation, r, teta;
-        const origin = {
-            x: 0,
-            y: 0,
-            z: 0
-        };
-        const y = 0;
+
+
         for (let x = -this.maxRadius; x <= this.maxRadius; x++) {
-            for (let z = -this.maxRadius; z <= this.maxRadius; z++) {
-                currentLocation = {
-                    x,
-                    y,
-                    z
-                };
-                r = Utils.distanceTo(origin, currentLocation);
-                teta = Utils.getTeta(origin, currentLocation);
-                teta = this.generation.map(teta);
-                if (r > this.minRadius + this.generation.periodicFunction(teta)) continue;
-                if (r <= this.minRadius)
-                    cubeMaterial = new THREE.MeshLambertMaterial({
-                        map: grassTexture
-                    });
-                else
-                    cubeMaterial = new THREE.MeshLambertMaterial({
-                        map: dirtTexture
-                    });
-                cube = new THREE.Mesh(CUBE_GEOMETRY, cubeMaterial);
-                cube.position.set(x, y, z);
-                this.addBlock(cube);
+            for (let y = 0; y <= Config.d3.altitude_max; y++) {
+                for (let z = -this.maxRadius; z <= this.maxRadius; z++) {
+                    currentLocation = {
+                        x,
+                        y,
+                        z
+                    };
+
+                    const type = this.generation.generationFunction(x, y, z);
+                    if (type === Type.Air) continue;
+                    switch (type) {
+                        case Type.Grass:
+                            cubeMaterial = new THREE.MeshLambertMaterial({
+                                map: grassTexture
+                            });
+                            break;
+                        case Type.Dirt:
+                            cubeMaterial = new THREE.MeshLambertMaterial({
+                                map: dirtTexture
+                            });
+                            break;
+                    }
+
+                    cube = new THREE.Mesh(CUBE_GEOMETRY, cubeMaterial);
+                    cube.position.set(x, y, z);
+                    this.addBlock(cube);
+                }
             }
         }
     }

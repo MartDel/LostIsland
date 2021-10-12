@@ -1,4 +1,23 @@
-const AMPLITUDE_MIN = 10;
+export const Config = {
+    d2: {
+        amplitude_min: 10
+    },
+    d3: {
+        amplitude: 30,
+        altitude_min: 0,
+        altitude_max: 10
+    },
+    textures: {
+        path: '../textures/'
+    }
+};
+
+export const Type = {
+    Air: null,
+    Grass: 'grass.jpg',
+    Dirt: 'dirt.jpeg'
+};
+
 export const Utils = {
     /**
      * Get the distance between two points
@@ -54,15 +73,17 @@ export const Utils = {
     },
 
     RandomGenerator: class {
-        constructor(maxAmplitude) {
-            this.amplitude = Math.floor(Math.random() * (maxAmplitude - AMPLITUDE_MIN)) + AMPLITUDE_MIN;
+        constructor(minRadius, maxRadius) {
+            const maxAmplitude = maxRadius - minRadius;
+            this.minRadius = minRadius;
+            this.maxRadius = maxRadius;
+            this.amplitude = Math.floor(Math.random() * (maxAmplitude - Config.d2.amplitude_min)) + Config.d2.amplitude_min;
             this.interval = Math.random() * (2 * Math.PI);
-            console.log('Seed', this.amplitude, this.interval);
-            let value = 'cos(x)';
-            for (let i = 2; i < this.amplitude + 1; i++) {
-                value += ' + (1 / 2) * cos(' + i + ' * x + ' + i + ' * ln(' + i + '))';
-            }
-            console.log(value);
+            this.interval = Math.floor(this.interval * Math.pow(10, 12));
+            this.seed = String(this.amplitude) + this.interval;
+            this.interval *= Math.pow(10, -12);
+            this.simplex = new SimplexNoise(this.seed);
+            console.log('Seed :', this.seed);
         }
 
         /**
@@ -79,12 +100,67 @@ export const Utils = {
         }
 
         /**
+         * Give the block type by its coord
+         * @param {[type]} x The block X
+         * @param {[type]} y The block Y
+         * @param {[type]} z The block Z
+         * @return {Type} The block type
+         */
+        generationFunction(x, y, z) {
+            const origin = {
+                x: 0,
+                y: 0,
+                z: 0
+            };
+            const currentLocation = {
+                x,
+                y,
+                z
+            };
+
+            // Polar coord
+            const r = Utils.distanceTo(origin, currentLocation);
+            let teta = Utils.getTeta(origin, currentLocation);
+            teta = this.mapTeta(teta);
+            let h = this.simplex.noise3D(x / Config.d3.amplitude, z / Config.d3.amplitude, 0.5);
+            h = Utils.map(h, -1, 1, Config.d3.altitude_min, Config.d3.altitude_max);
+
+            if (r > this.minRadius + this.periodicFunction(teta)) return Type.Air;
+            if (y <= h) {
+                if (r <= this.minRadius) return Type.Grass;
+                else return Type.Dirt;
+            } else return Type.Air;
+        }
+
+        /**
          * Map a value with the random interval
          * @param {number} value The value to map
          * @return {number} The mapped value
          */
-        map(value) {
+        mapTeta(value) {
             return Utils.map(value, 0, 2 * Math.PI, 0, this.interval);
+        }
+
+        /**
+         * Set a given seed and update amplitude and interval
+         * @param {string} s The seed to set
+         */
+        setSeed(s) {
+            this.seed = s;
+            this.simplex = new SimplexNoise(this.seed);
+            this.amplitude = Number(s.substring(0, 2));
+            this.interval = Number(s.substring(2)) * Math.pow(10, -12);
+        }
+
+        /*
+         * DEBUG
+         */
+        printPeriodicFunction() {
+            let value = 'cos(x)';
+            for (let i = 2; i < this.amplitude + 1; i++) {
+                value += ' + (1 / 2) * cos(' + i + ' * x + ' + i + ' * ln(' + i + '))';
+            }
+            console.log(value);
         }
     }
 };
