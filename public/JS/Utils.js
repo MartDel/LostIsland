@@ -1,22 +1,9 @@
-export const Config = {
-    d2: {
-        amplitude_min: 10
-    },
-    d3: {
-        amplitude: 30,
-        altitude_min: 0,
-        altitude_max: 10
-    },
-    textures: {
-        path: '../textures/'
-    }
-};
-
-export const Type = {
-    Air: null,
-    Grass: 'grass.jpg',
-    Dirt: 'dirt.jpeg'
-};
+import {
+    Config
+} from './Config.js';
+import {
+    Type
+} from './Type.js';
 
 export const Utils = {
     /**
@@ -77,7 +64,7 @@ export const Utils = {
             const maxAmplitude = maxRadius - minRadius;
             this.minRadius = minRadius;
             this.maxRadius = maxRadius;
-            this.amplitude = Math.floor(Math.random() * (maxAmplitude - Config.d2.amplitude_min)) + Config.d2.amplitude_min;
+            this.amplitude = Math.floor(Math.random() * (maxAmplitude - Config.d2.amplitudeMin)) + Config.d2.amplitudeMin;
             this.interval = Math.random() * (2 * Math.PI);
             this.interval = Math.floor(this.interval * Math.pow(10, 12));
             this.seed = String(this.amplitude) + this.interval;
@@ -100,10 +87,20 @@ export const Utils = {
         }
 
         /**
+         * Get the height coefficient to smooth the beach
+         * @param {number} r The distance between the current point and the origin
+         * @param {number} max_r The max distance between the origin and the farest point in the same line
+         * @return {number} The height coefficient
+         */
+        smoothBeach(r, max_r) {
+            return Math.pow(r, 2) / Math.pow(max_r - (this.minRadius - Config.d3.beachMinSize), 2)
+        }
+
+        /**
          * Give the block type by its coord
-         * @param {[type]} x The block X
-         * @param {[type]} y The block Y
-         * @param {[type]} z The block Z
+         * @param {number} x The block X
+         * @param {number} y The block Y
+         * @param {number} z The block Z
          * @return {Type} The block type
          */
         generationFunction(x, y, z) {
@@ -122,10 +119,17 @@ export const Utils = {
             const r = Utils.distanceTo(origin, currentLocation);
             let teta = Utils.getTeta(origin, currentLocation);
             teta = this.mapTeta(teta);
+            const max_r = this.minRadius + this.periodicFunction(teta);
             let h = this.simplex.noise3D(x / Config.d3.amplitude, z / Config.d3.amplitude, 0.5);
-            h = Utils.map(h, -1, 1, Config.d3.altitude_min, Config.d3.altitude_max);
+            h = Utils.map(h, -1, 1, Config.d3.altitudeMin, Config.d3.altitudeMax);
+            if (r <= max_r && r >= (this.minRadius - Config.d3.beachMinSize)) {
+                h *= this.smoothBeach(
+                    Utils.map(r, this.minRadius - Config.d3.beachMinSize, max_r, max_r - (this.minRadius - Config.d3.beachMinSize), 0),
+                    max_r
+                );
+            }
 
-            if (r > this.minRadius + this.periodicFunction(teta)) return Type.Air;
+            if (r > max_r) return Type.Air;
             if (y <= h) {
                 if (r <= this.minRadius) return Type.Grass;
                 else return Type.Dirt;
@@ -138,7 +142,7 @@ export const Utils = {
          * @return {number} The mapped value
          */
         mapTeta(value) {
-            return Utils.map(value, 0, 2 * Math.PI, 0, this.interval);
+            return Utils.map(value, 0, 2 * Math.PI, -this.interval, 2 * Math.PI - this.interval);
         }
 
         /**

@@ -3,10 +3,14 @@ import {
     OrbitControls
 } from 'https://cdn.skypack.dev/three/examples/jsm/controls/OrbitControls.js';
 import {
-    Utils,
-    Config,
-    Type
+    Utils
 } from './Utils.js';
+import {
+    Config
+} from './Config.js';
+import {
+    Type
+} from './Type.js';
 
 /*
  * DEBUG
@@ -43,6 +47,7 @@ function init() {
 
     // Setting up the camera
     camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 10000);
+    // camera.position.set(40, 40, 40);
     camera.position.set(0, 50, 0);
     camera.lookAt(new THREE.Vector3(0, 0, 0));
     scene.add(camera);
@@ -105,7 +110,7 @@ class Map {
 
 
         for (let x = -this.maxRadius; x <= this.maxRadius; x++) {
-            for (let y = 0; y <= Config.d3.altitude_max; y++) {
+            for (let y = 0; y <= Config.d3.altitudeMax; y++) {
                 for (let z = -this.maxRadius; z <= this.maxRadius; z++) {
                     currentLocation = {
                         x,
