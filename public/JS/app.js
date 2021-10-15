@@ -94,8 +94,7 @@ class Map {
         this.minRadius = minRadius;
         this.maxRadius = maxRadius;
         this.generation = new Utils.RandomGenerator(this.minRadius, this.maxRadius);
-        this.generation.setSeed('28457209759628');
-        // Max FPS : 24
+        // this.generation.setSeed('28457209759628');
     }
 
     /**
@@ -171,9 +170,6 @@ class Map {
      * @param {THREE.Scene} scene The game scene
      */
     update(scene) {
-        this.addBlock(new Block(0, 1, this.minRadius - 1, new THREE.MeshLambertMaterial({
-            map: dirtTexture
-        })));
         let coord, block;
         for (coord in this.blocks) {
             block = this.blocks[coord];
