@@ -154,6 +154,7 @@ export const Utils = {
             this.simplex = new SimplexNoise(this.seed);
             this.amplitude = Number(s.substring(0, 2));
             this.interval = Number(s.substring(2)) * Math.pow(10, -12);
+            console.log('New seed :', this.seed);
         }
 
         /*

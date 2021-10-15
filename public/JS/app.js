@@ -26,6 +26,7 @@ const loadManager = new THREE.LoadingManager();
 const loader = new THREE.TextureLoader(loadManager);
 const grassTexture = loader.load(Config.textures.path + Type.Grass);
 const dirtTexture = loader.load(Config.textures.path + Type.Dirt);
+const sandTexture = loader.load(Config.textures.path + Type.Sand);
 loadManager.onLoad = init;
 
 /**
@@ -47,8 +48,8 @@ function init() {
 
     // Setting up the camera
     camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 10000);
-    // camera.position.set(40, 40, 40);
-    camera.position.set(0, 50, 0);
+    camera.position.set(40, 40, 40);
+    // camera.position.set(0, 50, 0);
     camera.lookAt(new THREE.Vector3(0, 0, 0));
     scene.add(camera);
 
@@ -61,6 +62,10 @@ function init() {
     scene.add(ambientLight);
     const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
     scene.add(directionalLight);
+    const directionalLight2 = new THREE.DirectionalLight(0xffffff, 1);
+    directionalLight2.position.set(0, -10, 0);
+    directionalLight2.target.position.set(0, 0, 0);
+    scene.add(directionalLight2);
 
     // Setting up the floor
     map = new Map(20, 50);
@@ -85,20 +90,41 @@ function render() {
 const CUBE_GEOMETRY = new THREE.BoxGeometry(1, 1, 1);
 class Map {
     constructor(minRadius, maxRadius) {
-        this.blocks = [];
+        this.blocks = {};
         this.minRadius = minRadius;
         this.maxRadius = maxRadius;
         this.generation = new Utils.RandomGenerator(this.minRadius, this.maxRadius);
-        // this.generation.setSeed('135141235169937');
-        // console.log('135141235169937');
+        this.generation.setSeed('28457209759628');
+        // Max FPS : 24
     }
 
     /**
-     * Add a block to the map
-     * @param {THREE.Mesh} block The block to add
+     * Add a block to the map and optimise nears blocks
+     * @param {Block} block The block to add
      */
-    addBlock(block) {
-        this.blocks.push(block);
+    addBlock(block, verbose = false) {
+        const blockCoord = block.getTuplePosition();
+        this.blocks[blockCoord] = block;
+        const nears = [
+            [1, 0, 0],
+            [-1, 0, 0],
+            [0, 1, 0],
+            [0, -1, 0],
+            [0, 0, 1],
+            [0, 0, -1],
+        ];
+        let near, nearBlock, nearCoord = [];
+        for (near of nears) {
+            for (let i = 0; i < near.length; i++) {
+                nearCoord[i] = blockCoord[i] + near[i];
+            }
+            if (verbose) console.log(nearCoord);
+            if (this.blocks.hasOwnProperty(nearCoord)) {
+                nearBlock = this.blocks[nearCoord];
+                if (nearBlock.isSurrounded(this.blocks))
+                    nearBlock.visible = false;
+            }
+        }
     }
 
     /**
@@ -133,9 +159,8 @@ class Map {
                             break;
                     }
 
-                    cube = new THREE.Mesh(CUBE_GEOMETRY, cubeMaterial);
-                    cube.position.set(x, y, z);
-                    this.addBlock(cube);
+                    const block = new Block(x, y, z, cubeMaterial);
+                    this.addBlock(block);
                 }
             }
         }
@@ -146,7 +171,61 @@ class Map {
      * @param {THREE.Scene} scene The game scene
      */
     update(scene) {
-        for (let block of this.blocks)
-            scene.add(block);
+        this.addBlock(new Block(0, 1, this.minRadius - 1, new THREE.MeshLambertMaterial({
+            map: dirtTexture
+        })));
+        let coord, block;
+        for (coord in this.blocks) {
+            block = this.blocks[coord];
+            if (block.visible)
+                scene.add(block.cube);
+        }
+    }
+}
+
+class Block {
+    constructor(x, y, z, material) {
+        this.x = x;
+        this.y = y;
+        this.z = z;
+        this.material = material;
+        this.visible = true;
+        this.cube = new THREE.Mesh(CUBE_GEOMETRY, material);
+        this.cube.position.set(this.x, this.y, this.z);
+    }
+
+    /**
+     * Get the block position in an array [x, y, z]
+     * @return {Array} The array position
+     */
+    getTuplePosition() {
+        return [this.x, this.y, this.z];
+    }
+
+    /**
+     * Check if a block is surronded by other blocks (so can't be visible)
+     * @param {Object} blocks All generated blocks
+     * @return {Boolean} If the block is surrounded or not
+     */
+    isSurrounded(blocks) {
+        let surrounded = true;
+        const blockCoord = this.getTuplePosition();
+        const nears = [
+            [1, 0, 0],
+            [-1, 0, 0],
+            [0, 1, 0],
+            [0, -1, 0],
+            [0, 0, 1],
+            [0, 0, -1],
+        ];
+        let near, nearCoord = [];
+        for (near of nears) {
+            for (let i = 0; i < near.length; i++) {
+                nearCoord[i] = blockCoord[i] + near[i];
+            }
+            if (!blocks.hasOwnProperty(nearCoord) && nearCoord[1] >= 0)
+                surrounded = false;
+        }
+        return surrounded;
     }
 }
