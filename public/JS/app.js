@@ -25,8 +25,14 @@ let scene, renderer, camera, clock, controls, map;
 const loadManager = new THREE.LoadingManager();
 const loader = new THREE.TextureLoader(loadManager);
 const grassTexture = loader.load(Config.textures.path + Type.Grass);
+grassTexture.magFilter = THREE.NearestFilter;
 const dirtTexture = loader.load(Config.textures.path + Type.Dirt);
+dirtTexture.magFilter = THREE.NearestFilter;
+console.log(Config.textures.path + Type.Stone);
+const stoneTexture = loader.load(Config.textures.path + Type.Stone);
+stoneTexture.magFilter = THREE.NearestFilter;
 const sandTexture = loader.load(Config.textures.path + Type.Sand);
+sandTexture.magFilter = THREE.NearestFilter;
 loadManager.onLoad = init;
 
 /**
@@ -131,8 +137,7 @@ class Map {
      * @param {number} minRadius The minimum radius of the map generation
      */
     generate(minRadius) {
-        let cube, cubeMaterial, currentLocation, r, teta;
-
+        let cube, cubeTexture, currentLocation, r, teta;
 
         for (let x = -this.maxRadius; x <= this.maxRadius; x++) {
             for (let y = 0; y <= Config.d3.altitudeMax; y++) {
@@ -147,18 +152,22 @@ class Map {
                     if (type === Type.Air) continue;
                     switch (type) {
                         case Type.Grass:
-                            cubeMaterial = new THREE.MeshLambertMaterial({
-                                map: grassTexture
-                            });
+                            cubeTexture = grassTexture;
                             break;
                         case Type.Dirt:
-                            cubeMaterial = new THREE.MeshLambertMaterial({
-                                map: dirtTexture
-                            });
+                            cubeTexture = dirtTexture;
+                            break;
+                        case Type.Sand:
+                            cubeTexture = sandTexture;
+                            break;
+                        case Type.Stone:
+                            cubeTexture = stoneTexture
                             break;
                     }
 
-                    const block = new Block(x, y, z, cubeMaterial);
+                    const block = new Block(x, y, z, new THREE.MeshLambertMaterial({
+                        map: cubeTexture
+                    }));
                     this.addBlock(block);
                 }
             }

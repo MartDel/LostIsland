@@ -131,8 +131,11 @@ export const Utils = {
 
             if (r > max_r) return Type.Air;
             if (y <= h) {
-                if (r <= this.minRadius) return Type.Grass;
-                else return Type.Dirt;
+                if (max_r - r <= 3) return Type.Sand;
+                else {
+                    if (y <= h - 1) return Type.Stone;
+                    else return Type.Grass;
+                }
             } else return Type.Air;
         }
 
