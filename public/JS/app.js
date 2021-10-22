@@ -3,6 +3,10 @@ import {
     OrbitControls
 } from 'https://cdn.skypack.dev/three/examples/jsm/controls/OrbitControls.js';
 import {
+    GLTFLoader
+} from 'https://cdn.skypack.dev/three/examples/jsm/loaders/GLTFLoader.js';
+
+import {
     Utils
 } from './Utils.js';
 import {
@@ -11,6 +15,9 @@ import {
 import {
     Type
 } from './Type.js';
+import {
+    Model3D
+} from './Model3D.js';
 
 /*
  * DEBUG
@@ -21,18 +28,42 @@ document.body.appendChild(stats.dom);
 
 let scene, renderer, camera, clock, controls, map;
 
-// Import textures;
+// Import textures
 const loadManager = new THREE.LoadingManager();
-const loader = new THREE.TextureLoader(loadManager);
+const textureLoader = new THREE.TextureLoader(loadManager);
 let currentType;
 for (let typeName in Type) {
     if (!Type.hasOwnProperty(typeName)) continue;
     currentType = Type[typeName];
     if (currentType === null) continue;
-    currentType.texture = loader.load(Config.textures.path + currentType.textureName);
+    currentType.texture = textureLoader.load(Config.textures.path + currentType.textureName);
     currentType.texture.magFilter = THREE.NearestFilter;
 }
-loadManager.onLoad = init;
+loadManager.onLoad = loadModels;
+
+// Import 3D models
+const modelLoader = new GLTFLoader();
+
+function loadModels() {
+    let currentModel, loaded = true;
+    for (let modelName in Model3D) {
+        if (!Model3D.hasOwnProperty(modelName)) continue;
+        currentModel = Model3D[modelName];
+        if (currentModel.model === null) {
+            loaded = false;
+            modelLoader.load(Config.models.path + currentModel.modelName, gltf => {
+                currentModel.model = gltf;
+                loadModels();
+            });
+            break;
+        }
+    }
+    if (loaded) {
+        console.log(Model3D);
+        init();
+    }
+}
+
 
 /**
  * Init function
@@ -53,7 +84,7 @@ function init() {
 
     // Setting up the camera
     camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 10000);
-    camera.position.set(40, 40, 40);
+    camera.position.set(30, 30, 30);
     // camera.position.set(0, 50, 0);
     camera.lookAt(new THREE.Vector3(0, 0, 0));
     scene.add(camera);
@@ -66,6 +97,8 @@ function init() {
     const ambientLight = new THREE.AmbientLight(0xcccccc, 0.6);
     scene.add(ambientLight);
     const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+    // directionalLight.position.set(10, 20, 10);
+    // directionalLight.target.position.set(0, 0, 0);
     scene.add(directionalLight);
     const directionalLight2 = new THREE.DirectionalLight(0xffffff, 1);
     directionalLight2.position.set(0, -10, 0);
@@ -99,7 +132,7 @@ class Map {
         this.minRadius = minRadius;
         this.maxRadius = maxRadius;
         this.generation = new Utils.RandomGenerator(this.minRadius, this.maxRadius);
-        // this.generation.setSeed('28457209759628');
+        this.generation.setSeed('193823850232448');
     }
 
     /**
@@ -147,7 +180,15 @@ class Map {
                         z
                     };
 
-                    const type = this.generation.generationFunction(x, y, z);
+                    let type;
+                    if (x === -1 && z === this.minRadius + 1 && y === 1) {
+                        type = Type.Air;
+                        const palmer = Model3D.Palmer.model.scene;
+                        palmer.position.set(x, y - 0.5, z);
+                        scene.add(palmer);
+                    } else {
+                        type = this.generation.generationFunction(x, y, z);
+                    }
                     if (type === Type.Air) continue;
 
                     const block = new Block(x, y, z, new THREE.MeshLambertMaterial({

@@ -10,5 +10,8 @@ export const Config = {
     },
     textures: {
         path: '../textures/'
+    },
+    models: {
+        path: '../models/'
     }
 };
