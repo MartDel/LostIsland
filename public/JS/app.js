@@ -24,15 +24,14 @@ let scene, renderer, camera, clock, controls, map;
 // Import textures;
 const loadManager = new THREE.LoadingManager();
 const loader = new THREE.TextureLoader(loadManager);
-const grassTexture = loader.load(Config.textures.path + Type.Grass);
-grassTexture.magFilter = THREE.NearestFilter;
-const dirtTexture = loader.load(Config.textures.path + Type.Dirt);
-dirtTexture.magFilter = THREE.NearestFilter;
-console.log(Config.textures.path + Type.Stone);
-const stoneTexture = loader.load(Config.textures.path + Type.Stone);
-stoneTexture.magFilter = THREE.NearestFilter;
-const sandTexture = loader.load(Config.textures.path + Type.Sand);
-sandTexture.magFilter = THREE.NearestFilter;
+let currentType;
+for (let typeName in Type) {
+    if (!Type.hasOwnProperty(typeName)) continue;
+    currentType = Type[typeName];
+    if (currentType === null) continue;
+    currentType.texture = loader.load(Config.textures.path + currentType.textureName);
+    currentType.texture.magFilter = THREE.NearestFilter;
+}
 loadManager.onLoad = init;
 
 /**
@@ -150,23 +149,9 @@ class Map {
 
                     const type = this.generation.generationFunction(x, y, z);
                     if (type === Type.Air) continue;
-                    switch (type) {
-                        case Type.Grass:
-                            cubeTexture = grassTexture;
-                            break;
-                        case Type.Dirt:
-                            cubeTexture = dirtTexture;
-                            break;
-                        case Type.Sand:
-                            cubeTexture = sandTexture;
-                            break;
-                        case Type.Stone:
-                            cubeTexture = stoneTexture
-                            break;
-                    }
 
                     const block = new Block(x, y, z, new THREE.MeshLambertMaterial({
-                        map: cubeTexture
+                        map: type.texture
                     }));
                     this.addBlock(block);
                 }
