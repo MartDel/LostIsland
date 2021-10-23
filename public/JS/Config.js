@@ -1,12 +1,13 @@
 export const Config = {
     d2: {
-        amplitudeMin: 10
+        amplitudeMin: 10,
+        beachMinSize: 3
     },
     d3: {
         amplitude: 20,
         altitudeMin: 0,
         altitudeMax: 10,
-        beachMinSize: 3
+        beachMaxHeight: 2
     },
     textures: {
         path: '../textures/'

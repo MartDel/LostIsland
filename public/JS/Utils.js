@@ -93,7 +93,7 @@ export const Utils = {
          * @return {number} The height coefficient
          */
         smoothBeach(r, max_r) {
-            return Math.pow(r, 2) / Math.pow(max_r - (this.minRadius - Config.d3.beachMinSize), 2)
+            return Math.pow(r, 2) / Math.pow(max_r - (this.minRadius - Config.d2.beachMinSize), 2)
         }
 
         /**
@@ -122,16 +122,17 @@ export const Utils = {
             const max_r = this.minRadius + this.periodicFunction(teta);
             let h = this.simplex.noise3D(x / Config.d3.amplitude, z / Config.d3.amplitude, 0.5);
             h = Utils.map(h, -1, 1, Config.d3.altitudeMin, Config.d3.altitudeMax);
-            if (r <= max_r && r >= (this.minRadius - Config.d3.beachMinSize)) {
+            if (r <= max_r && r >= (this.minRadius - Config.d2.beachMinSize)) {
                 h *= this.smoothBeach(
-                    Utils.map(r, this.minRadius - Config.d3.beachMinSize, max_r, max_r - (this.minRadius - Config.d3.beachMinSize), 0),
+                    Utils.map(r, this.minRadius - Config.d2.beachMinSize, max_r, max_r - (this.minRadius - Config.d2.beachMinSize), 0),
                     max_r
                 );
             }
 
             if (r > max_r) return Type.Air;
             if (y <= h) {
-                if (max_r - r <= 3) return Type.Sand;
+                if (max_r - r <= Config.d2.beachMinSize && h <= Config.d3.beachMaxHeight)
+                    return Type.Sand;
                 else {
                     if (y <= h - 1) return Type.Stone;
                     else return Type.Grass;

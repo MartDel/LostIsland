@@ -7,9 +7,6 @@ import {
 } from 'https://cdn.skypack.dev/three/examples/jsm/loaders/GLTFLoader.js';
 
 import {
-    Utils
-} from './Utils.js';
-import {
     Config
 } from './Config.js';
 import {
@@ -18,6 +15,9 @@ import {
 import {
     Model3D
 } from './Model3D.js';
+import {
+    Map
+} from './Map.js';
 
 /*
  * DEBUG
@@ -43,7 +43,9 @@ loadManager.onLoad = loadModels;
 
 // Import 3D models
 const modelLoader = new GLTFLoader();
-
+/**
+ * Load an empty model and restart
+ */
 function loadModels() {
     let currentModel, loaded = true;
     for (let modelName in Model3D) {
@@ -110,8 +112,9 @@ function init() {
     render();
 }
 
-let elapsed;
-
+/**
+ * Main loop function
+ */
 function render() {
     stats.begin();
     controls.update();
@@ -120,140 +123,4 @@ function render() {
     renderer.render(scene, camera);
     stats.end();
     requestAnimationFrame(render);
-}
-
-const CUBE_GEOMETRY = new THREE.BoxGeometry(1, 1, 1);
-class Map {
-    constructor(minRadius, maxRadius) {
-        this.blocks = {};
-        this.minRadius = minRadius;
-        this.maxRadius = maxRadius;
-        this.generation = new Utils.RandomGenerator(this.minRadius, this.maxRadius);
-        this.generation.setSeed('193823850232448');
-    }
-
-    /**
-     * Add a block to the map and optimise nears blocks
-     * @param {Block} block The block to add
-     */
-    addBlock(block, verbose = false) {
-        const blockCoord = block.getTuplePosition();
-        this.blocks[blockCoord] = block;
-        const nears = [
-            [1, 0, 0],
-            [-1, 0, 0],
-            [0, 1, 0],
-            [0, -1, 0],
-            [0, 0, 1],
-            [0, 0, -1],
-        ];
-        let near, nearBlock, nearCoord = [];
-        for (near of nears) {
-            for (let i = 0; i < near.length; i++) {
-                nearCoord[i] = blockCoord[i] + near[i];
-            }
-            if (verbose) console.log(nearCoord);
-            if (this.blocks.hasOwnProperty(nearCoord)) {
-                nearBlock = this.blocks[nearCoord];
-                if (nearBlock.isSurrounded(this.blocks))
-                    nearBlock.visible = false;
-            }
-        }
-    }
-
-    /**
-     * Generate the map array
-     * @param {number} minRadius The minimum radius of the map generation
-     */
-    generate(minRadius) {
-        let cube, cubeTexture, currentLocation, r, teta;
-
-        for (let x = -this.maxRadius; x <= this.maxRadius; x++) {
-            for (let y = 0; y <= Config.d3.altitudeMax; y++) {
-                for (let z = -this.maxRadius; z <= this.maxRadius; z++) {
-                    currentLocation = {
-                        x,
-                        y,
-                        z
-                    };
-
-                    let type;
-                    if (x === -1 && z === this.minRadius + 1 && y === 1) {
-                        type = Type.Air;
-                        const palmer = Model3D.Palmer.model.scene;
-                        palmer.position.set(x, y - 0.5, z);
-                        scene.add(palmer);
-                    } else {
-                        type = this.generation.generationFunction(x, y, z);
-                    }
-                    if (type === Type.Air) continue;
-
-                    const block = new Block(x, y, z, new THREE.MeshLambertMaterial({
-                        map: type.texture
-                    }));
-                    this.addBlock(block);
-                }
-            }
-        }
-    }
-
-    /**
-     * Update the map to the scene
-     * @param {THREE.Scene} scene The game scene
-     */
-    update(scene) {
-        let coord, block;
-        for (coord in this.blocks) {
-            block = this.blocks[coord];
-            if (block.visible)
-                scene.add(block.cube);
-        }
-    }
-}
-
-class Block {
-    constructor(x, y, z, material) {
-        this.x = x;
-        this.y = y;
-        this.z = z;
-        this.material = material;
-        this.visible = true;
-        this.cube = new THREE.Mesh(CUBE_GEOMETRY, material);
-        this.cube.position.set(this.x, this.y, this.z);
-    }
-
-    /**
-     * Get the block position in an array [x, y, z]
-     * @return {Array} The array position
-     */
-    getTuplePosition() {
-        return [this.x, this.y, this.z];
-    }
-
-    /**
-     * Check if a block is surronded by other blocks (so can't be visible)
-     * @param {Object} blocks All generated blocks
-     * @return {Boolean} If the block is surrounded or not
-     */
-    isSurrounded(blocks) {
-        let surrounded = true;
-        const blockCoord = this.getTuplePosition();
-        const nears = [
-            [1, 0, 0],
-            [-1, 0, 0],
-            [0, 1, 0],
-            [0, -1, 0],
-            [0, 0, 1],
-            [0, 0, -1],
-        ];
-        let near, nearCoord = [];
-        for (near of nears) {
-            for (let i = 0; i < near.length; i++) {
-                nearCoord[i] = blockCoord[i] + near[i];
-            }
-            if (!blocks.hasOwnProperty(nearCoord) && nearCoord[1] >= 0)
-                surrounded = false;
-        }
-        return surrounded;
-    }
 }
