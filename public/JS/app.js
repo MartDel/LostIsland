@@ -58,10 +58,7 @@ function loadModels() {
             break;
         }
     }
-    if (loaded) {
-        console.log(Model3D);
-        init();
-    }
+    if (loaded) init();
 }
 
 
