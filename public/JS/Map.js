@@ -98,6 +98,7 @@ export class Map {
         // Add the test palmer
         const palmer = Model3D.Palmer.model.scene;
         palmer.position.set(-2, 0.5, this.minRadius);
+        palmer.scale.multiplyScalar(0.7);
         scene.add(palmer);
     }
 }

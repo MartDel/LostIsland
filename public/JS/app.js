@@ -63,7 +63,6 @@ function loadModels() {
     if (loaded) init();
 }
 
-
 /**
  * Init function
  */
@@ -83,7 +82,7 @@ function init() {
 
     // Setting up the camera
     camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 10000);
-    camera.position.set(30, 30, 30);
+    camera.position.set(30, 15, 30);
     // camera.position.set(0, 50, 0);
     camera.lookAt(new THREE.Vector3(0, 0, 0));
     scene.add(camera);
@@ -123,4 +122,18 @@ function render() {
     renderer.render(scene, camera);
     stats.end();
     requestAnimationFrame(render);
+}
+
+window.addEventListener('click', onMouseClick, false);
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+
+function onMouseClick(event) {
+    // Convert coordinates
+    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+    raycaster.setFromCamera(mouse, camera);
+    const intersects = raycaster.intersectObjects(scene.children);
+    if (intersects.length > 0) console.log(intersects[0].object.position);
 }
