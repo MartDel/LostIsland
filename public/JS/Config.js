@@ -13,6 +13,9 @@ export const Config = {
         path: '../textures/'
     },
     models: {
-        path: '../models/'
+        path: '../models/',
+        palmerScale: 0.7,
+        treeScale: 1.3,
+        rockScale: 1,
     }
 };

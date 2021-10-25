@@ -71,8 +71,6 @@ function init() {
     clock = new THREE.Clock();
     scene = new THREE.Scene();
 
-    console.log(Model3D);
-
     // Setting up the renderer
     renderer = new THREE.WebGLRenderer({
         antialias: true,

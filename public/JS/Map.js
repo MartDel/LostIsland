@@ -98,13 +98,19 @@ export class Map {
         // Add the test palmer
         const palmer = Model3D.Palmer.model.scene;
         palmer.position.set(-2, 0.5, this.minRadius);
-        palmer.scale.multiplyScalar(0.7);
+        palmer.scale.multiplyScalar(Config.models.palmerScale);
         scene.add(palmer);
 
         // Add the test tree
         const tree = Model3D.Tree.model.scene;
         tree.position.set(1, 4.5, 10);
-        tree.scale.multiplyScalar(1.5);
+        tree.scale.multiplyScalar(Config.models.treeScale);
         scene.add(tree);
+
+        // Add the test rock
+        const rock = Model3D.Rock.model.scene;
+        rock.position.set(14, 0.5, 16);
+        rock.scale.multiplyScalar(Config.models.rockScale);
+        scene.add(rock);
     }
 }

@@ -6,5 +6,9 @@ export const Model3D = {
     Tree: {
         modelName: 'tree.glb',
         model: null
+    },
+    Rock: {
+        modelName: 'rock.glb',
+        model: null
     }
 };
