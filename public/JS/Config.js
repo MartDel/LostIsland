@@ -1,7 +1,7 @@
 export const Config = {
     d2: {
         amplitudeMin: 10,
-        beachMinSize: 3
+        beachMinSize: 4
     },
     d3: {
         amplitude: 20,

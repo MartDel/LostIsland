@@ -100,5 +100,11 @@ export class Map {
         palmer.position.set(-2, 0.5, this.minRadius);
         palmer.scale.multiplyScalar(0.7);
         scene.add(palmer);
+
+        // Add the test tree
+        const tree = Model3D.Tree.model.scene;
+        tree.position.set(1, 4.5, 10);
+        tree.scale.multiplyScalar(1.5);
+        scene.add(tree);
     }
 }
