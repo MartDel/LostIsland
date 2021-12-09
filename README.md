@@ -21,6 +21,10 @@ npm start
 http://localhost:8080
 ```
 
+## Documentation
+
+Pour plus d'information, vous pouvez consulter la documentation [ici](https://maddening-paw-151.notion.site/Lost-Island-5527c3d1ffc5482d9ac08dd516a2e6b4) !
+
 ## Quelques images
 
 ### La génération aléatoire
