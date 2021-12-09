@@ -21,7 +21,9 @@ npm start
 http://localhost:8080
 ```
 
-## Génération aléatoire
+## Quelques images
+
+### La génération aléatoire
 
 ![2D](public/img/island_2d.png)
 ![3D](public/img/island_3d.png)
