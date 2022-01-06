@@ -1,67 +1,99 @@
 import * as THREE from 'https://cdn.skypack.dev/three';
-import {
-    OrbitControls
-} from 'https://cdn.skypack.dev/three/examples/jsm/controls/OrbitControls.js';
-import {
-    GLTFLoader
-} from 'https://cdn.skypack.dev/three/examples/jsm/loaders/GLTFLoader.js';
+import { OrbitControls } from 'https://cdn.skypack.dev/three/examples/jsm/controls/OrbitControls.js';
+import { GLTFLoader } from 'https://cdn.skypack.dev/three/examples/jsm/loaders/GLTFLoader.js';
 
-import {
-    Config
-} from './Config.js';
-import {
-    Type
-} from './Type.js';
-import {
-    Model3D
-} from './Model3D.js';
-import {
-    Map
-} from './Map.js';
+import { Config } from './config.js';
+import { Type } from './assets/Type.js';
+import { Model3D } from './assets/Model3D.js';
+import { Map } from './level_design/Map.js';
 
-/*
- * DEBUG
- */
+let scene, renderer, camera, clock, controls, map;
+
+/* ---------------------------------- Debug --------------------------------- */
+
+// Stats
 const stats = new Stats();
 stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
 document.body.appendChild(stats.dom);
 
-let scene, renderer, camera, clock, controls, map;
+// Raycaster
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+window.addEventListener('click', event => {
+    // Convert coordinates
+    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
-// Import textures
+    // Interpret raycaster data
+    raycaster.setFromCamera(mouse, camera);
+    const intersects = raycaster.intersectObjects(scene.children);
+
+    // Print clicked block position
+    if (intersects.length > 0) console.log(intersects[0].object.position);
+}, false);
+
+/* -------------------------------- Textures -------------------------------- */
+
+// Textures load manager
 const loadManager = new THREE.LoadingManager();
 const textureLoader = new THREE.TextureLoader(loadManager);
-let currentType;
+
+// Load each texture of 'Type'
 for (let typeName in Type) {
     if (!Type.hasOwnProperty(typeName)) continue;
-    currentType = Type[typeName];
+    
+    // Skip empty types (like air for example)
+    const currentType = Type[typeName];
     if (currentType === null) continue;
+
+    // Add the texture to the loader
     currentType.texture = textureLoader.load(Config.textures.path + currentType.textureName);
     currentType.texture.magFilter = THREE.NearestFilter;
 }
-loadManager.onLoad = loadModels;
 
-// Import 3D models
+/* --------------------------------- Models --------------------------------- */
+
+// Model load manager
 const modelLoader = new GLTFLoader();
+
 /**
- * Load an empty model and restart
+ * Load an empty model and restart (recursive, start 'init' when it's done)
  */
 function loadModels() {
-    let currentModel, loaded = true;
+    let loaded = true;
+
+    // Try to find an unloaded model in 'Model3D'
     for (let modelName in Model3D) {
         if (!Model3D.hasOwnProperty(modelName)) continue;
-        currentModel = Model3D[modelName];
+
+        const currentModel = Model3D[modelName];
         if (currentModel.model === null) {
+            // The model is not loaded yet
             loaded = false;
+
+            // Add the model to the load manager
             modelLoader.load(Config.models.path + currentModel.modelName, gltf => {
                 currentModel.model = gltf;
+
+                // Load the other models
                 loadModels();
             });
+
             break;
         }
     }
+
+    // Start ThreeJS when it's done
     if (loaded) init();
 }
+
+// Load models after textures
+loadManager.onLoad = loadModels;
+
+
+/* -------------------------------------------------------------------------- */
+/*                           ThreeJS main functions                           */
+/* -------------------------------------------------------------------------- */
 
 /**
  * Init function
@@ -103,7 +135,7 @@ function init() {
     // directionalLight2.target.position.set(0, 0, 0);
     // scene.add(directionalLight2);
 
-    // Setting up the floor
+    // Setting up the map
     map = new Map(20, 50);
     map.generate();
 
@@ -115,25 +147,18 @@ function init() {
  * Main loop function
  */
 function render() {
+    // DEBUG : Start calcul frame rate
     stats.begin();
+
+    // DEBUG : Update OrbitControl (camera control)
     controls.update();
 
     // Rendering the 3D scene
     renderer.render(scene, camera);
+
+    // DEBUG : Stop calcul frame rate
     stats.end();
+
+    // Wait before looping
     requestAnimationFrame(render);
-}
-
-window.addEventListener('click', onMouseClick, false);
-const raycaster = new THREE.Raycaster();
-const mouse = new THREE.Vector2();
-
-function onMouseClick(event) {
-    // Convert coordinates
-    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-
-    raycaster.setFromCamera(mouse, camera);
-    const intersects = raycaster.intersectObjects(scene.children);
-    if (intersects.length > 0) console.log(intersects[0].object.position);
 }

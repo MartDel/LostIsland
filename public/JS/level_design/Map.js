@@ -1,29 +1,23 @@
-import {
-    MeshLambertMaterial
-} from 'https://cdn.skypack.dev/three';
+import { MeshLambertMaterial } from 'https://cdn.skypack.dev/three';
 
-import {
-    Utils
-} from './Utils.js';
-import {
-    Config
-} from './Config.js';
-import {
-    Type
-} from './Type.js';
-import {
-    Model3D
-} from './Model3D.js';
-import {
-    Block
-} from './Block.js';
+import { Utils } from '../utils/utils.js';
+import { Config } from '../config.js';
+import { Type } from '../assets/Type.js';
+import { Model3D } from '../assets/Model3D.js';
+import { Block } from './Block.js';
+import { RandomGenerator } from './RandomGenerator.js';
 
+/* -------------------------------------------------------------------------- */
+/*                         Represent the displayed map                        */
+/* -------------------------------------------------------------------------- */
 export class Map {
     constructor(minRadius, maxRadius) {
         this.blocks = {};
         this.minRadius = minRadius;
         this.maxRadius = maxRadius;
-        this.generation = new Utils.RandomGenerator(this.minRadius, this.maxRadius);
+        this.generation = new RandomGenerator(this.minRadius, this.maxRadius);
+
+        // DEBUG : Set a given seed
         this.generation.setSeed('193823850232448');
     }
 
@@ -31,25 +25,23 @@ export class Map {
      * Add a block to the map and optimise nears blocks
      * @param {Block} block The block to add
      */
-    addBlock(block, verbose = false) {
+    addBlock(block) {
+        // Add the block to the map
         const blockCoord = block.getTuplePosition();
         this.blocks[blockCoord] = block;
-        const nears = [
-            [1, 0, 0],
-            [-1, 0, 0],
-            [0, 1, 0],
-            [0, -1, 0],
-            [0, 0, 1],
-            [0, 0, -1],
-        ];
-        let near, nearBlock, nearCoord = [];
-        for (near of nears) {
+
+        // Check near blocks to hide non-visible blocks
+        const nears = Utils.nearPositions;
+        let nearCoord = [];
+        for (const near of nears) {
+            // Build the near block real position
             for (let i = 0; i < near.length; i++) {
                 nearCoord[i] = blockCoord[i] + near[i];
             }
-            if (verbose) console.log(nearCoord);
+
+            // Hide the near block if it exists and is surrounded
             if (this.blocks.hasOwnProperty(nearCoord)) {
-                nearBlock = this.blocks[nearCoord];
+                const nearBlock = this.blocks[nearCoord];
                 if (nearBlock.isSurrounded(this.blocks))
                     nearBlock.visible = false;
             }
@@ -61,19 +53,16 @@ export class Map {
      * @param {number} minRadius The minimum radius of the map generation
      */
     generate(minRadius) {
-        let cube, cubeTexture, currentLocation, r, teta, type;
         for (let x = -this.maxRadius; x <= this.maxRadius; x++) {
             for (let y = 0; y <= Config.d3.altitudeMax; y++) {
                 for (let z = -this.maxRadius; z <= this.maxRadius; z++) {
-                    currentLocation = {
-                        x,
-                        y,
-                        z
-                    };
+                    const currentLocation = {x, y, z};
 
-                    type = this.generation.generationFunction(x, y, z);
+                    // Calcul the block type
+                    const type = this.generation.generationFunction(x, y, z);
                     if (type === Type.Air) continue;
 
+                    // Create the bloc with the correct texture
                     const block = new Block(x, y, z, new MeshLambertMaterial({
                         map: type.texture
                     }));
