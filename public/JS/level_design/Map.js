@@ -6,11 +6,18 @@ import { Type } from '../assets/Type.js';
 import { Model3D } from '../assets/Model3D.js';
 import { Block } from './Block.js';
 import { RandomGenerator } from './RandomGenerator.js';
+import { Mesh } from './Mesh.js';
 
 /* -------------------------------------------------------------------------- */
 /*                         Represent the displayed map                        */
 /* -------------------------------------------------------------------------- */
 export class Map {
+
+    /**
+     * Map contructor
+     * @param {Number} minRadius The minimum radius of the map
+     * @param {Number} maxRadius The maximum radius of the map
+     */
     constructor(minRadius, maxRadius) {
         this.blocks = {};
         this.minRadius = minRadius;
@@ -27,7 +34,7 @@ export class Map {
      */
     addBlock(block) {
         // Add the block to the map
-        const blockCoord = block.getTuplePosition();
+        const blockCoord = block.toPositionArray();
         this.blocks[blockCoord] = block;
 
         // Check near blocks to hide non-visible blocks
@@ -77,35 +84,37 @@ export class Map {
      * @param {THREE.Scene} scene The game scene
      */
     update(scene) {
-        let coord, block;
-        for (coord in this.blocks) {
-            block = this.blocks[coord];
+        // Display all visible blocks
+        for (const coord in this.blocks) {
+            const block = this.blocks[coord];
             if (block.visible)
-                scene.add(block.cube);
+                scene.add(block.toThreeJS());
         }
 
         // Add the test palmer
-        const palmer = Model3D.Palmer.model.scene;
-        palmer.position.set(-2, 0.5, this.minRadius);
-        palmer.scale.multiplyScalar(Model3D.Palmer.scale);
-        scene.add(palmer);
+        const palmer = new Mesh(-2, 0.5, this.minRadius, Model3D.Palmer);
+        scene.add(palmer.toThreeJS());
 
         // Add the test tree
-        const tree = Model3D.Tree.model.scene;
-        tree.position.set(1, 4.5, 10);
-        tree.scale.multiplyScalar(Model3D.Tree.scale);
-        scene.add(tree);
+        const tree = new Mesh(1, 4.5, 10, Model3D.Tree);
+        scene.add(tree.toThreeJS());
 
         // Add the test rock
-        const rock = Model3D.Rock.model.scene;
-        rock.position.set(14, 0.5, 16);
-        rock.scale.multiplyScalar(Model3D.Rock.scale);
-        scene.add(rock);
+        const rock = new Mesh(14, 0.5, 16, Model3D.Rock);
+        scene.add(rock.toThreeJS());
+
+        // Add a second test rock
+        const rock2 = new Mesh(8, 0.5, 18, Model3D.Rock);
+        scene.add(rock2.toThreeJS());
 
         // Add the test bush
-        const bush = Model3D.Bush.model.scene;
-        bush.position.set(3, 2.5, 16);
-        bush.scale.multiplyScalar(Model3D.Bush.scale);
-        scene.add(bush);
+        const bush = new Mesh(3, 2.5, 16, Model3D.Bush);
+        scene.add(bush.toThreeJS());
+
+        // Display the rock hitbox
+        const rockHitbox = rock.hitbox.toThreeJS();
+        for (const box of rockHitbox) {
+            scene.add(box.toThreeJS());
+        }
     }
 }

@@ -6,6 +6,12 @@ import { Type } from '../assets/Type.js';
 /*                         Represent the map generator                        */
 /* -------------------------------------------------------------------------- */
 export class RandomGenerator {
+
+    /**
+     * RandomGenerator contructor
+     * @param {Number} minRadius The minimum radius of the map
+     * @param {Number} maxRadius The maximum radius of the map
+     */
     constructor(minRadius, maxRadius) {
         const maxAmplitude = maxRadius - minRadius;
         this.minRadius = minRadius;

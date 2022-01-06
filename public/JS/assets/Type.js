@@ -19,4 +19,8 @@ export const Type = {
         textureName: 'stone.jpg',
         texture: null
     },
+    Hitbox: {
+        textureName: 'hitbox.png',
+        texture: null
+    }
 };
