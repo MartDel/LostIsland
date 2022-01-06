@@ -30,4 +30,10 @@ Pour plus d'information, vous pouvez consulter la documentation [ici](https://ma
 ### La génération aléatoire
 
 ![2D](public/img/island_2d.png)
-![3D](public/img/island_3d.png)
+![3D](public/img/island_3d_1.png)
+
+### Le texturing et modélisme
+
+![3D avec textures](public/img/island_3d_2.png)
+![3D avec modèles](public/img/island_3d_3.png)
+
