@@ -29,7 +29,11 @@ export class Mesh extends Locatable {
         const mesh = this.model.model.scene.clone();
 
         // Set the position
-        mesh.position.set(this.x, this.y, this.z);
+        mesh.position.set(
+            this.x + this.model.position[0],
+            this.y + this.model.position[1],
+            this.z + this.model.position[2]
+        );
 
         // Update the size
         mesh.scale.multiplyScalar(this.model.scale);

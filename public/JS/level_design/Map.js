@@ -100,11 +100,11 @@ export class Map {
         scene.add(tree.toThreeJS());
 
         // Add the test rock
-        const rock = new Mesh(14, 0.5, 16, Model3D.Rock);
+        const rock = new Mesh(14, 1, 16, Model3D.Rock);
         scene.add(rock.toThreeJS());
 
         // Add a second test rock
-        const rock2 = new Mesh(8, 0.5, 18, Model3D.Rock);
+        const rock2 = new Mesh(8, 1, 18, Model3D.Rock);
         scene.add(rock2.toThreeJS());
 
         // Add the test bush

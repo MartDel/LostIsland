@@ -6,6 +6,7 @@ export const Model3D = {
         modelName: 'palmer.glb',
         model: null,
         scale: 0.7,
+        position: [0, 0, 0],
         hitbox: [
             [0, 0, 0]
         ]
@@ -14,6 +15,7 @@ export const Model3D = {
         modelName: 'tree.glb',
         model: null,
         scale: 1.3,
+        position: [0, 0, 0],
         hitbox: [
             [0, 0, 0]
         ]
@@ -22,14 +24,22 @@ export const Model3D = {
         modelName: 'rock.glb',
         model: null,
         scale: 1,
+        position: [0, -0.5, 0],
         hitbox: [
-            [0, 0, 0]
+            [0, 0, 0],
+            [1, 0, 0],
+            [-1, 0, 0],
+            [0, 0, 1],
+            [0, 0, -1],
+            [0, 1, 0],
+            [1, 0, -1]
         ]
     },
     Bush: {
         modelName: 'bush.glb',
         model: null,
         scale: 1,
+        position: [0, 0, 0],
         hitbox: [
             [0, 0, 0]
         ]
