@@ -96,7 +96,7 @@ export class Map {
         scene.add(palmer.toThreeJS());
 
         // Add the test tree
-        const tree = new Mesh(1, 4.5, 10, Model3D.Tree);
+        const tree = new Mesh(1, 5, 10, Model3D.Tree);
         scene.add(tree.toThreeJS());
 
         // Add the test rock
@@ -112,7 +112,7 @@ export class Map {
         scene.add(bush.toThreeJS());
 
         // Display the bush hitbox
-        const hb = palmer.hitbox.toThreeJS();
+        const hb = tree.hitbox.toThreeJS();
         for (const box of hb) {
             scene.add(box.toThreeJS());
         }
