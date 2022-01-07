@@ -108,12 +108,12 @@ export class Map {
         scene.add(rock2.toThreeJS());
 
         // Add the test bush
-        const bush = new Mesh(3, 2.5, 16, Model3D.Bush);
+        const bush = new Mesh(3, 3, 16, Model3D.Bush);
         scene.add(bush.toThreeJS());
 
-        // Display the rock hitbox
-        const rockHitbox = rock.hitbox.toThreeJS();
-        for (const box of rockHitbox) {
+        // Display the bush hitbox
+        const hb = bush.hitbox.toThreeJS();
+        for (const box of hb) {
             scene.add(box.toThreeJS());
         }
     }
