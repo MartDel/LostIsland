@@ -92,7 +92,7 @@ export class Map {
         }
 
         // Add the test palmer
-        const palmer = new Mesh(-2, 0.5, this.minRadius, Model3D.Palmer);
+        const palmer = new Mesh(-2, 1, this.minRadius, Model3D.Palmer);
         scene.add(palmer.toThreeJS());
 
         // Add the test tree
@@ -112,7 +112,7 @@ export class Map {
         scene.add(bush.toThreeJS());
 
         // Display the bush hitbox
-        const hb = bush.hitbox.toThreeJS();
+        const hb = palmer.hitbox.toThreeJS();
         for (const box of hb) {
             scene.add(box.toThreeJS());
         }
