@@ -79,5 +79,17 @@ export const Model3D = {
             [0, 1, -1],
             [1, 1, -1]
         ]
-    }
+    },
+
+    /**
+     * Get which models are place on the island beach
+     * @returns An array which contains Model3D items
+     */
+    onIslandBeach: () => [Model3D.Palmer, Model3D.Rock],
+
+    /**
+     * Get which models are place on the island beach
+     * @returns An array which contains Model3D items
+     */
+    onIslandForest: () => [Model3D.Tree, Model3D.Bush]
 };

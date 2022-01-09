@@ -19,7 +19,12 @@ export class Map {
      * @param {Number} maxRadius The maximum radius of the map
      */
     constructor(minRadius, maxRadius) {
+        // Generated stuff (empty for now...)
         this.blocks = {};
+        this.models = {};
+        this.hitboxes = {};
+
+        // Generation data
         this.minRadius = minRadius;
         this.maxRadius = maxRadius;
         this.generation = new RandomGenerator(this.minRadius, this.maxRadius);
@@ -56,27 +61,55 @@ export class Map {
     }
 
     /**
+     * Add a mesh/model to the map and update the hitboxes array
+     * @param {Mesh} model The mesh/model to add
+     */
+    addModel(model) {
+        // Add the model to the map
+        const modelCoord = model.toPositionArray();
+        this.models[modelCoord] = model;
+
+        // Update the hitboxes
+        const hitbox = model.hitbox;
+        this.hitboxes[modelCoord] = hitbox;
+    }
+
+    /**
      * Generate the map array
      * @param {number} minRadius The minimum radius of the map generation
      */
     generate(minRadius) {
+        let forestFloor = [];
+
+        // Generate the map structure
         for (let x = -this.maxRadius; x <= this.maxRadius; x++) {
             for (let y = 0; y <= Config.d3.altitudeMax; y++) {
                 for (let z = -this.maxRadius; z <= this.maxRadius; z++) {
-                    const currentLocation = {x, y, z};
+                    const currentPosition = [x, y, z];
 
                     // Calcul the block type
                     const type = this.generation.generationFunction(x, y, z);
                     if (type === Type.Air) continue;
-
+                    
                     // Create the bloc with the correct texture
                     const block = new Block(x, y, z, new MeshLambertMaterial({
                         map: type.texture
                     }));
                     this.addBlock(block);
+                    
+                    // Select the forest area
+                    if (type === Type.Grass) forestFloor.push(currentPosition);
                 }
             }
         }
+        
+        // Place forest elements
+        // while (forestFloor.length > 0) {
+        //     // Choose a random block
+        //     const randomBlock = Math.floor(Math.random() * forestFloor.length);
+        //     if ()
+        // }
+        
     }
 
     /**
@@ -91,30 +124,18 @@ export class Map {
                 scene.add(block.toThreeJS());
         }
 
-        // Add the test palmer
-        const palmer = new Mesh(-2, 1, this.minRadius, Model3D.Palmer);
-        scene.add(palmer.toThreeJS());
+        // Display all models
+        for (const coord in this.models) {
+            const model = this.models[coord];
+            scene.add(model.toThreeJS());
+        }
 
-        // Add the test tree
-        const tree = new Mesh(1, 5, 10, Model3D.Tree);
-        scene.add(tree.toThreeJS());
-
-        // Add the test rock
-        const rock = new Mesh(14, 1, 16, Model3D.Rock);
-        scene.add(rock.toThreeJS());
-
-        // Add a second test rock
-        const rock2 = new Mesh(8, 1, 18, Model3D.Rock);
-        scene.add(rock2.toThreeJS());
-
-        // Add the test bush
-        const bush = new Mesh(3, 3, 16, Model3D.Bush);
-        scene.add(bush.toThreeJS());
-
-        // Display the bush hitbox
-        const hb = tree.hitbox.toThreeJS();
-        for (const box of hb) {
-            scene.add(box.toThreeJS());
+        // Display hitboxes
+        for (const coord in this.hitboxes) {
+            const hb = this.hitboxes[coord].toThreeJS();
+            for (const box of hb) {
+                scene.add(box.toThreeJS());
+            }
         }
     }
 }

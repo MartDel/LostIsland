@@ -13,7 +13,12 @@ export const Config = {
         beachMaxHeight: 2
     },
     textures: {
-        path: '../textures/'
+        path: '../textures/',
+        hitbox: {
+            isTransparent: true,
+            opacity: 0.5,
+            color: 0xFF0000
+        }
     },
     models: {
         path: '../models/'
